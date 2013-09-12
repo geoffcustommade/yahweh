@@ -1,6 +1,6 @@
 (function(win) {
   'use strict';
-  var Yahweh = {};
+  var Yahweh = {}, localConfig = {}, defaultConfig;
 
   function throwError(name, message) {
     throw {
@@ -9,8 +9,53 @@
     };
   }
 
+  defaultConfig = {
+    compile: function(name, data) {
+      if (name) {
+        data = data || {};
+        return JST[name](data);
+      } else {
+        throwError('NoTemplateNameSpecified', 'Ok, don\'t be a douche, provide a template name you dummy.');
+      }
+    }
+  };
+
+  Yahweh.config = function(obj) {
+    localConfig = _.extend({}, defaultConfig, obj);
+  };
+
   Yahweh.Inject = function(obj) {
+    function createObj(obj) {
+      var result = {};
+
+      if (typeof obj === 'function') {
+        result = new obj();
+      } else if (obj.name && typeof (obj.name) === 'function') {
+        result = new obj.name(obj.args || {});
+      }
+
+      return result;
+    }
+
+    var reserved = {
+      model: function(model) {
+        return createObj(model);
+      },
+
+      collection: function(collection) {
+        return createObj(collection);
+      }
+    };
+
     if (obj.name) {
+      obj.args = obj.args || {};
+
+      _.each(obj.args, function(item, key) {
+        if (key && reserved[key]) {
+          obj.args[key] = reserved[key](item);
+        }
+      });
+
       return new obj.name(obj.args || {});
     } else {
       throwError('ObjectNotFound', 'Come on you idiot, pass in a qualified object.');
@@ -98,6 +143,13 @@
     preRender: function() {},
 
     postRender: function() {}
+  });
+
+  Yahweh.View = Backbone.View.extend({
+    renderTemplate: function(name, data) {
+      this.el.innerHTML = localConfig.compile(name, data);
+      return this;
+    }
   });
 
   win.Yahweh = Yahweh;

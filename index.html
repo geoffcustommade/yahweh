@@ -23,12 +23,27 @@
     <script src="js/yahweh.page-manager.js"></script>
     <script src="js/main.js"></script>
     <script>
+      Yahweh.config({
+        compile: function(name, data) {
+          return JST[name](data);
+        }
+      });
+
       var manager = new Yahweh.ViewsManager({
         el: '#content',
 
         views: [
           {
-            name: FooView
+            name: FooView,
+            args: {
+              model: {
+                name: Foo,
+                args: {
+                  name: 'Geoff',
+                  age: 31
+                }
+              }
+            }
           },
           {
             name: BarView

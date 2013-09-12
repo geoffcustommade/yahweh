@@ -1,8 +1,23 @@
 (function(w) {
-  w.FooView = Backbone.View.extend({
+  w.Foo = Backbone.Model.extend({
+    defaults: {
+    },
+
+    initialize: function(attrs) {
+    },
+
+    isSomething: function() {
+      return true;
+    }
+  });
+
+  w.FooView = Yahweh.View.extend({
     path: 'foo',
 
     name: 'Foo',
+
+    initialize: function(options) {
+    },
 
     render: function() {
       this.el.innerHTML = '<p>render foo</p>';
@@ -32,19 +47,15 @@
     }
   });
 
-  w.NavigationView = Backbone.View.extend({
-    template: JST['navigation'],
-
+  w.NavigationView = Yahweh.View.extend({
     initialize: function(options) {
       this.views = options.views;
     },
 
     render: function() {
-      this.el.innerHTML = this.template({
+      return this.renderTemplate('navigation', {
         items: this.getTemplateData()
       });
-
-      return this;
     },
 
     getTemplateData: function() {
