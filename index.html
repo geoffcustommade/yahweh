@@ -10,68 +10,63 @@
       <div id="sidebar"></div>
       <div id="footer"></div>
     </div>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
 
+    <script src="js/lib/require.js"></script>
     <script>
-      window.JST = {};
-      JST['navigation'] = _.template('<ul><% _.each(items, function(item) { %><li><a href="#<%= item.path %>"><%= item.name %></a></li><% }); %></ul>');
-    </script>
+      require(['js/main'], function() {
+        require(['yahweh', 'page-manager', 'views'], function(Yahweh, PageManager, Views) {
+          console.log(Yahweh);
+          Yahweh.config({
+            compile: function(name, data) {
+              return JST[name](data);
+            }
+          });
 
-    <script src="js/lib/yahweh.js"></script>
-    <script src="js/yahweh.page-manager.js"></script>
-    <script src="js/main.js"></script>
-    <script>
-      Yahweh.config({
-        compile: function(name, data) {
-          return JST[name](data);
-        }
-      });
+          var manager = new Yahweh.ViewsManager({
+            el: '#content',
 
-      var manager = new Yahweh.ViewsManager({
-        el: '#content',
-
-        views: [
-          {
-            name: FooView,
-            args: {
-              model: {
-                name: Foo,
+            views: [
+              {
+                name: Views.FooView,
                 args: {
-                  name: 'Geoff',
-                  age: 31
+                  model: {
+                    name: Views.Foo,
+                    args: {
+                      name: 'Geoff',
+                      age: 31
+                    }
+                  }
                 }
+              },
+              {
+                name: Views.BarView
+              },
+              {
+                name: Views.BazView
+              }
+            ]
+          });
+
+          var pageManager = PageManager({
+            el: '#wrap',
+
+            views: manager.views,
+
+            sections: {
+              navigation: {
+                name: Views.NavigationView
+              },
+
+              sidebar: {
+                name: Views.SidebarView
+              },
+
+              footer: {
+                name: Views.FooterView
               }
             }
-          },
-          {
-            name: BarView
-          },
-          {
-            name: BazView
-          }
-        ]
-      });
-
-      var pageManager = Yahweh.PageManager({
-        el: '#wrap',
-
-        views: manager.views,
-
-        sections: {
-          navigation: {
-            name: NavigationView
-          },
-
-          sidebar: {
-            name: SidebarView
-          },
-
-          footer: {
-            name: FooterView
-          }
-        }
+          });
+        });
       });
     </script>
   </body>

@@ -1,5 +1,5 @@
-(function(Yahweh) {
-  Yahweh.PageBuilder = Yahweh.Builder.extend({
+(function(win) {
+  var PageBuilder = Yahweh.Builder.extend({
     preInit: function(options) {
       this.views = options.views || {};
       this.viewsObj = this.createViewsObj();
@@ -39,7 +39,7 @@
     }
   });
 
-  Yahweh.PageRouter = Backbone.Router.extend({
+  var PageRouter = Backbone.Router.extend({
     initialize: function(options) {
       this.view = options.view;
     },
@@ -54,9 +54,9 @@
     }
   });
 
-  Yahweh.PageManager = function(args) {
-    var view = new Yahweh.PageBuilder(args).render(),
-        router = new Yahweh.PageRouter({ view: view });
+  function PageManager(args) {
+    var view = new PageBuilder(args).render(),
+        router = new PageRouter({ view: view });
 
     Backbone.history.start();
 
@@ -65,5 +65,7 @@
       router: router
     };
   };
-}(window.Yahweh || {}));
+
+  win.PageManager = PageManager;
+}(window));
 

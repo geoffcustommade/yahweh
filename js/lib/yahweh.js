@@ -1,11 +1,50 @@
 (function(win) {
   'use strict';
+
+  var initialize = Backbone.View.prototype.initialize;
+  var render = Backbone.View.prototype.render;
+
+  _.extend(Backbone.View.prototype, {
+    initialize: function(options) {
+      if (this.implement) {
+        new Implementer(this, this.implement).validate();
+      }
+    }
+  });
+
+  function Implementer(instance, properties) {
+    this.instance = instance;
+    this.properties = properties;
+  }
+
+  Implementer.prototype.validate = function() {
+    var i, len, property;
+
+    for (i = 0, len = this.properties.length; i < len; i++) {
+      property = this.properties[i];
+      if (!this.instance[property]) {
+        this.throwError('NotImplemented', 'You need to implement the ' + property + ' property. See object usage.');
+      }
+    }
+  };
+
+  Implementer.prototype.throwError = function(name, message) {
+    throw {
+      name: name,
+      message: message,
+      toString: function() {
+        return this.name + ": " + this.message
+      }
+    };
+  };
+
   var Yahweh = {}, localConfig = {}, defaultConfig;
 
   function throwError(name, message) {
     throw {
       name: name,
-      message: message
+      message: message,
+      toString: function(){ return this.name + ": " + this.message }
     };
   }
 
