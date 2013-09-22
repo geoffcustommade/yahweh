@@ -19,8 +19,7 @@ Install node and then globally install the following node modules:
 Once you have karma and bower, install the necessary node modules and bower
 components by doing the following:
 
-    npm update
-    bower install
+    npm install; bower install
 
 *Development
 
