@@ -27,13 +27,15 @@
   };
 
   Yahweh.Inject = function(obj) {
-    function createObj(obj) {
+    obj = obj || {};
+
+    function createObj(ob) {
       var result = {};
 
-      if (typeof obj === 'function') {
-        result = new obj();
-      } else if (obj.name && typeof (obj.name) === 'function') {
-        result = new obj.name(obj.args || {});
+      if (typeof ob === 'function') {
+        result = new ob();
+      } else if (ob.name && typeof (ob.name) === 'function') {
+        result = new ob.name(ob.args || {});
       }
 
       return result;
