@@ -1,43 +1,6 @@
 (function(win) {
   'use strict';
 
-  var initialize = Backbone.View.prototype.initialize;
-  var render = Backbone.View.prototype.render;
-
-  _.extend(Backbone.View.prototype, {
-    initialize: function(options) {
-      if (this.implement) {
-        new Implementer(this, this.implement).validate();
-      }
-    }
-  });
-
-  function Implementer(instance, properties) {
-    this.instance = instance;
-    this.properties = properties;
-  }
-
-  Implementer.prototype.validate = function() {
-    var i, len, property;
-
-    for (i = 0, len = this.properties.length; i < len; i++) {
-      property = this.properties[i];
-      if (!this.instance[property]) {
-        this.throwError('NotImplemented', 'You need to implement the ' + property + ' property. See object usage.');
-      }
-    }
-  };
-
-  Implementer.prototype.throwError = function(name, message) {
-    throw {
-      name: name,
-      message: message,
-      toString: function() {
-        return this.name + ": " + this.message
-      }
-    };
-  };
-
   var Yahweh = {}, localConfig = {}, defaultConfig;
 
   function throwError(name, message) {
@@ -101,9 +64,10 @@
     }
   };
 
-  Yahweh.ViewsManager = Backbone.View.extend({
+  Yahweh.Bundler = Backbone.View.extend({
     initialize: function(options) {
-      this.options = options;
+      this.length = 0;
+      this.on('bundler:add', this.addToBundler,  this);
       this.views = this.createViews(options.views || []);
     },
 
@@ -111,13 +75,28 @@
       var i, len, view, instance, instances = [];
 
       for (i = 0, len = views.length; i < len; i++) {
-        view = views[i];
-        view.args = this.determineArgs(view);
-        instance = Yahweh.Inject(view);
+        view = this.createView(views[i]);
         instances.push(instance);
       }
 
       return instances;
+    },
+
+    addView: function(view) {
+      this.createView(view);
+      return this;
+    },
+
+    addToBundler: function(view) {
+      this.length++;
+    },
+
+    createView: function(view) {
+      var instance;
+      view.args = this.determineArgs(view);
+      instance = Yahweh.Inject(view);
+      this.trigger('bundler:add', instance);
+      return instance;
     },
 
     determineArgs: function(view) {
@@ -182,13 +161,6 @@
     preRender: function() {},
 
     postRender: function() {}
-  });
-
-  Yahweh.View = Backbone.View.extend({
-    renderTemplate: function(name, data) {
-      this.el.innerHTML = localConfig.compile(name, data);
-      return this;
-    }
   });
 
   win.Yahweh = Yahweh;

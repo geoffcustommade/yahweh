@@ -11,10 +11,10 @@
       <div id="footer"></div>
     </div>
 
-    <script src="js/lib/require.js"></script>
+    <script src="bower_components/requirejs/require.js"></script>
     <script>
       require(['js/main'], function() {
-        require(['yahweh', 'page-manager', 'views'], function(Yahweh, PageManager, Views) {
+        require(['yahweh', 'page-manager', 'js/views'], function(Yahweh, PageManager, Views) {
           console.log(Yahweh);
           Yahweh.config({
             compile: function(name, data) {
@@ -22,7 +22,7 @@
             }
           });
 
-          var manager = new Yahweh.ViewsManager({
+          var manager = new Yahweh.Bundler({
             el: '#content',
 
             views: [
