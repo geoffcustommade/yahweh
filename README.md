@@ -1,4 +1,4 @@
-*Yahweh
+#Yahweh
 
 This library acts as a way of extending Backbone in a few ways. In particular:
 
@@ -10,7 +10,7 @@ Manager, by the name Builder, that can tie into Bundler.
 an object by the name of PageManager. At a later point, it won't be included,
 but for now it works.
 
-*Installing
+#Installing
 
 Install node and then globally install the following node modules:
 
@@ -21,7 +21,7 @@ components by doing the following:
 
     npm install; bower install
 
-*Development
+#Development
 
 To develop on top of Yaweh, run the following from the command line:
 
@@ -33,7 +33,7 @@ features. Think of it writing tests as a way of developing features, verses
 using existing code to develop against. If a new feature is needed, awesome.
 Then write a test that supports the feature and use it for your benefit.
 
-*Future Development
+#Future Development
 
 Currently, Yahweh comes bundled with the following:
 
