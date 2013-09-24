@@ -114,11 +114,6 @@ define(['yahweh', 'jasmine-jquery'], function(Yahweh) {
       expect(this.builder.$('div#contents')).toContainHtml('<h1>Hello World!</h1>');
       expect(this.builder.$('aside#links a').length).toEqual(3);
       expect(this.builder.$('footer#closing')).toHaveText('Copyright crap');
-      /*
-      expect(this.builder.$('#content')).toContain('div#contents');
-      expect(this.builder.$('#sidebar')).toContain('aside#links');
-      expect(this.builder.$('#footer')).toContain('footer#closing');
-      */
     });
   });
 });
