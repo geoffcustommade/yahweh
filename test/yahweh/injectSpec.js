@@ -13,12 +13,13 @@ define(['yahweh'], function(Yahweh) {
     });
 
     it('should throw an error when no name has been provided', function() {
+
       /*
       TODO: get this working when I have internet and can look up proper usage.
       var view = Yahweh.Inject();
       expect(view).toThrow();
        */
-    })
+    });
 
     it('should be receptive to accepting arguments', function() {
       var view = Yahweh.Inject({

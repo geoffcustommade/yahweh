@@ -44,7 +44,7 @@ define(['backbone', 'underscore', 'yahweh'], function(Backbone, _, Yahweh) {
     foo: 'got foo',
 
     render: function() {
-      this.el.innerHTML = '<p>render bar</p>'
+      this.el.innerHTML = '<p>render bar</p>';
       return this;
     }
   });
@@ -55,7 +55,7 @@ define(['backbone', 'underscore', 'yahweh'], function(Backbone, _, Yahweh) {
     name: 'Baz',
 
     render: function() {
-      this.el.innerHTML = '<p>render baz</p>'
+      this.el.innerHTML = '<p>render baz</p>';
       return this;
     }
   });
@@ -88,14 +88,14 @@ define(['backbone', 'underscore', 'yahweh'], function(Backbone, _, Yahweh) {
 
   Views.SidebarView = Backbone.View.extend({
     render: function() {
-      this.el.innerHTML = '<p>sidebar</p>'
+      this.el.innerHTML = '<p>sidebar</p>';
       return this;
     }
   });
 
   Views.FooterView = Backbone.View.extend({
     render: function() {
-      this.el.innerHTML = '<p>footer</p>'
+      this.el.innerHTML = '<p>footer</p>';
       return this;
     }
   });

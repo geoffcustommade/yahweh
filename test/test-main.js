@@ -14,6 +14,7 @@ require.config({
     jquery: 'bower_components/jquery/jquery',
     underscore: 'bower_components/underscore/underscore',
     backbone: 'bower_components/backbone/backbone',
+    'jasmine-jquery': 'bower_components/jasmine-jquery/lib/jasmine-jquery',
     yahweh: 'src/yahweh',
     'page-manager': 'src/page-manager'
   },

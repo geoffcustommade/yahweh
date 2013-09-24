@@ -1,30 +1,15 @@
 (function(win) {
   'use strict';
 
-  var Yahweh = {}, localConfig = {}, defaultConfig;
+  var Yahweh = {};
 
   function throwError(name, message) {
     throw {
       name: name,
       message: message,
-      toString: function(){ return this.name + ": " + this.message }
+      toString: function() { return this.name + ": " + this.message; }
     };
   }
-
-  defaultConfig = {
-    compile: function(name, data) {
-      if (name) {
-        data = data || {};
-        return JST[name](data);
-      } else {
-        throwError('NoTemplateNameSpecified', 'Ok, don\'t be a douche, provide a template name you dummy.');
-      }
-    }
-  };
-
-  Yahweh.config = function(obj) {
-    localConfig = _.extend({}, defaultConfig, obj);
-  };
 
   Yahweh.Inject = function(obj) {
     obj = obj || {};
