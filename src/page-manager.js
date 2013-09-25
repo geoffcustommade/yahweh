@@ -1,7 +1,8 @@
 (function(win) {
   var PageBuilder = Yahweh.Builder.extend({
     preInit: function(options) {
-      this.views = options.views || {};
+      this.bundler = options.bundler;
+      this.views = this.bundler.views;
       this.viewsObj = this.createViewsObj();
     },
 
@@ -10,7 +11,9 @@
     },
 
     addToInstantiation: function(obj) {
+      obj.bundler = this.bundler;
       obj.views = this.views;
+      obj.builder = this;
       return obj;
     },
 
@@ -58,13 +61,15 @@
     var view = new PageBuilder(args).render(),
         router = new PageRouter({ view: view });
 
-    Backbone.history.start();
+    if (args.start) {
+      Backbone.history.start();
+    }
 
     return {
       view: view,
       router: router
     };
-  };
+  }
 
   win.PageManager = PageManager;
 }(window));

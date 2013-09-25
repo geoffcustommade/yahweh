@@ -53,20 +53,16 @@
 
   Yahweh.Bundler = Backbone.View.extend({
     initialize: function(options) {
+      this.views = [];
       this.length = 0;
       this.on('bundler:add', this.addToBundler,  this);
-      this.views = this.createViews(options.views || []);
+      this.appendViews(options.views);
     },
 
-    createViews: function(views) {
-      var i, len, view, instance, instances = [];
-
-      for (i = 0, len = views.length; i < len; i++) {
-        view = this.createView(views[i]);
-        instances.push(instance);
+    appendViews: function(views) {
+      for (var i = 0, len = views.length; i < len; i++) {
+        this.createView(views[i]);
       }
-
-      return instances;
     },
 
     addView: function(view) {
@@ -83,7 +79,7 @@
       view.args = this.determineArgs(view);
       instance = Yahweh.Inject(view);
       this.trigger('bundler:add', instance);
-      return instance;
+      this.views.push(instance);
     },
 
     determineArgs: function(view) {
@@ -104,16 +100,21 @@
       var instances = {};
 
       _.each(sections, function(obj, name) {
-        instances[name] = this.createInstance(obj);
+        instances[name] = this.createInstance(name, obj);
       }, this);
 
       return instances;
     },
 
-    createInstance: function(obj) {
+    createInstance: function(name, obj) {
       obj.args = obj.args || {};
+      this.setupDefaultArgs(name, obj.args);
       obj.args = this.addToInstantiation(obj.args);
       return new Yahweh.Inject(obj);
+    },
+
+    setupDefaultArgs: function(name, args) {
+      args.parentEl = this.el;
     },
 
     addToInstantiation: function(obj) {

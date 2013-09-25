@@ -1,96 +1,27 @@
-define(['yahweh', 'jasmine-jquery'], function(Yahweh) {
-  function setupFixture(path) {
-    var fixture, fixtures = window.__html__ || {};
-
-    if ((fixture = fixtures[path])) {
-      setFixtures(fixture);
-    } else {
-      throw {
-        name: 'FixtureNotFound',
-        message: 'No fixture was found for path ' + path,
-        toString: function() {
-          return this.name + ':' + this.message;
-        }
-      };
-    }
-  }
-
+define(['yahweh', 'test/mocks/sections', 'test/helpers', 'jasmine-jquery'], function(Yahweh, Sections, Helpers) {
   describe('Yahweh Builder', function() {
-    var NavigatgionView = Backbone.View.extend({
-      template: _.template('<a href="#home">Home</a><a href="#about">About</a><a href="#contact">Contact</a>'),
-
-      tagName: 'nav',
-
-      id: 'menu',
-
-      render: function() {
-        this.$el.html(this.template());
-        return this;
-      }
-    });
-
-    var ContentView = Backbone.View.extend({
-      template: _.template('<h1>Hello World!</h1>'),
-
-      tagName: 'div',
-
-      id: 'contents',
-
-      render: function() {
-        this.$el.html(this.template());
-        return this;
-      }
-    });
-
-    var SidebarView = Backbone.View.extend({
-      template: _.template('<a href="http://www.google.com">Google</a><a href="http://www.backcountry.com">Backcountry</a><a href="http://www.whittakermountaineering.com/">Whittaker Mountaineering</a>'),
-
-      tagName: 'aside',
-
-      id: 'links',
-
-      render: function() {
-        this.$el.html(this.template());
-        return this;
-      }
-    });
-
-    var FooterView = Backbone.View.extend({
-      template: _.template('Copyright crap'),
-
-      tagName: 'footer',
-
-      id: 'closing',
-
-      render: function() {
-        this.$el.html(this.template());
-        return this;
-      }
-    });
-
-
     function createBuilder() {
       return new Yahweh.Builder({
         el: '#wrap',
         sections: {
           navigation: {
-            name: NavigatgionView
+            name: Sections.NavigationView
           },
           content: {
-            name: ContentView
+            name: Sections.ContentView
           },
           sidebar: {
-            name: SidebarView
+            name: Sections.SidebarView
           },
           footer: {
-            name: FooterView
-          },
+            name: Sections.FooterView
+          }
         }
       });
     }
 
     beforeEach(function() {
-      setupFixture('test/fixtures/yahweh/builder.html');
+      Helpers.setFixture('test/fixtures/layout.html');
       this.builder = createBuilder().render();
     });
 

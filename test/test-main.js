@@ -17,6 +17,7 @@ require.config({
     'jasmine-jquery': 'bower_components/jasmine-jquery/lib/jasmine-jquery',
     yahweh: 'src/yahweh',
     'page-manager': 'src/page-manager'
+    //'test-helpers': 'test/helpers'
   },
 
   shim: {
