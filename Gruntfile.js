@@ -23,16 +23,34 @@ module.exports = function(grunt) {
       }
     },
 
+    copy: {
+      main: {
+        files: [
+          {
+            expand: true,
+            src: ['src/*'],
+            dest: process.env.HOME + '/CustomMade/static/library/js/yahweh',
+            flatten: true
+          }
+        ]
+      }
+    },
+
     watch: {
       karma: {
         files: ['src/*.js', 'test/**/*.js'],
         tasks: ['karma:unit:run']
+      },
+      copy: {
+        files: ['src/*'],
+        tasks: ['copy:main']
       }
     }
   });
 
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('default', ['karma:continuous', 'uglify:dist']);
