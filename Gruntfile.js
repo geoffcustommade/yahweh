@@ -5,8 +5,7 @@ module.exports = function(grunt) {
     karma: {
       unit: {
         configFile: karmaConfig,
-        autoWatch: true
-        //background: true
+        background: true
       },
 
       continuous: {
@@ -36,5 +35,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  //grunt.registerTask('default', ['karma:continuous', 'uglify:dist']);
+  grunt.registerTask('default', ['karma:continuous', 'uglify:dist']);
 };

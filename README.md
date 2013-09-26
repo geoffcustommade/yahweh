@@ -12,9 +12,14 @@ but for now it works.
 
 ##Installing
 
+Clone the repository and cd into the project like so:
+
+    git clone git@github.com:geoffcustommade/yahweh.git; cd yahweh
+
 Install node and then globally install the following node modules:
 
-    npm install -g karma bower
+    # you may need sudo here
+    npm install -g karma bower grunt-cli
 
 Once you have karma and bower, install the necessary node modules and bower
 components by doing the following:
@@ -25,10 +30,12 @@ components by doing the following:
 
 To develop on top of Yaweh, run the following from the command line:
 
-    karma start
+    grunt karma:unit watch
 
-This will run all the tests as you're developing on top of Yahweh. While
-developing on top of Yahweh, tests should be created that support any new
+This will run all the tests as you're developing on top of Yahweh. Furthermore,
+it will handle any sort of automated watch tasks by grunt.
+
+While developing on top of Yahweh, tests should be created that support any new
 features. Think of it writing tests as a way of developing features, verses
 using existing code to develop against. If a new feature is needed, awesome.
 Then write a test that supports the feature and use it for your benefit.
