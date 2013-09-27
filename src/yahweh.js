@@ -7,8 +7,11 @@
     throw {
       name: name,
       message: message,
-      toString: function() { return this.name + ": " + this.message; }
-    };
+      toString: function() { return this.name + ": " + this.message; }    };
+  }
+
+  function throwNotImplemented(name) {
+    throwError('NotImplementedError', 'You must implement ' + name + ' in order to continue you idiot.');
   }
 
   Yahweh.Inject = function(obj) {
@@ -151,6 +154,107 @@
     postRender: function() {}
   });
 
+  function Implementer(context, implement) {
+    this.context = context;
+    this.implement = implement;
+  }
+
+  Implementer.prototype.implementMethods= function() {
+    this.checkImplementation('properties', this.checkProperty);
+    return this;
+  };
+
+  Implementer.prototype.implementProperties = function() {
+    this.checkImplementation('methods', this.checkMethod);
+    return this;
+  };
+
+  Implementer.prototype.checkImplementation = function(name, fn) {
+    var implementations = this.context.implement[name];
+
+    if (implementations) {
+      for (var i = 0, len = implementations.length; i < len; i++) {
+        fn.call(this, implementations[i]);
+      }
+    }
+  };
+
+  Implementer.prototype.checkProperty = function(property) {
+    if (!this.context[property]) {
+      throwNotImplemented(property);
+    }
+  };
+
+  Implementer.prototype.checkMethod = function(method) {
+    if (!this.context[property]) {
+      this.context[method] = function() {
+        throwNotImplemented(method);
+      };
+    }
+  };
+
+  Yahweh.Implementer = Implementer;
+
+  var OriginalView = Backbone.View;
+
+  Backbone.View = OriginalView.extend({
+    constructor: function() {
+      OriginalView.apply(this, Array.prototype.slice.call(arguments));
+      this.implementations();
+    },
+
+    implementations: function() {
+      if (this.implement) {
+        new Implementer(this, this.implement)
+          .implementMethods()
+          .implementProperties();
+      }
+    }
+  });
+
+  Yahweh.Foundation = Backbone.View.extend({
+    initialize: function(options) {
+      this.data = {};
+    },
+
+    add: function(name, value) {
+      if (name) {
+        this.data[name] = value;
+      }
+
+      return this;
+    },
+
+    template: function() {
+      throwNotImplemented('template');
+    },
+
+    context: function() {
+      return {};
+    },
+
+    render: function() {
+      var template = this.resolveType('template'),
+          context = this.resolveType('context');
+
+      this.$el.html(JST[template](context));
+      return this;
+    },
+
+    resolveType: function(name) {
+      var val, property = this[name], propertyType = typeof(property);
+
+      if (property) {
+        if (propertyType === 'function') {
+          val = property();
+        } else {
+          val = property;
+        }
+      }
+
+      return val;
+    }
+  });
+
   win.Yahweh = Yahweh;
 }(window));
-
