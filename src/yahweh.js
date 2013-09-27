@@ -1,7 +1,19 @@
 (function(win) {
   'use strict';
 
-  var Yahweh = {};
+  var Yahweh = {}, OriginalView = Backbone.View,
+      localConfig = {}, defaultConfig;
+
+  defaultConfig = {
+    compile: function(name, data) {
+      if (name) {
+        data = data || {};
+        return JST[name](data);
+      } else {
+        throwError('NoTemplateNameSpecified', 'Ok, don\'t be a douche, provide a template name you dummy.');
+      }
+    }
+  };
 
   function throwError(name, message) {
     throw {
@@ -13,6 +25,10 @@
   function throwNotImplemented(name) {
     throwError('NotImplementedError', 'You must implement ' + name + ' in order to continue you idiot.');
   }
+
+  Yahweh.Config = function(obj) {
+    localConfig = _.extend({}, defaultConfig, obj);
+  };
 
   Yahweh.Inject = function(obj) {
     obj = obj || {};
@@ -195,23 +211,6 @@
 
   Yahweh.Implementer = Implementer;
 
-  var OriginalView = Backbone.View;
-
-  Backbone.View = OriginalView.extend({
-    constructor: function() {
-      OriginalView.apply(this, Array.prototype.slice.call(arguments));
-      this.implementations();
-    },
-
-    implementations: function() {
-      if (this.implement) {
-        new Implementer(this, this.implement)
-          .implementMethods()
-          .implementProperties();
-      }
-    }
-  });
-
   Yahweh.Foundation = Backbone.View.extend({
     initialize: function(options) {
       this.data = {};
@@ -235,9 +234,10 @@
 
     render: function() {
       var template = this.resolveType('template'),
-          context = this.resolveType('context');
+          context = this.resolveType('context'),
+          output = localConfig.compile(template, context);
 
-      this.$el.html(JST[template](context));
+      this.$el.html(output);
       return this;
     },
 
@@ -255,6 +255,29 @@
       return val;
     }
   });
+
+  // Any basic setup or implementations happen here. Think of this area as the
+  // bootstrap portion to anything Yahweh related.
+  (function() {
+    Backbone.View = OriginalView.extend({
+      constructor: function() {
+        OriginalView.apply(this, Array.prototype.slice.call(arguments));
+        this.implementations();
+      },
+
+      implementations: function() {
+        if (this.implement) {
+          new Implementer(this, this.implement)
+            .implementMethods()
+            .implementProperties();
+        }
+      }
+    });
+
+    if (_.isEmpty(localConfig)) {
+      localConfig = defaultConfig;
+    }
+  }());
 
   win.Yahweh = Yahweh;
 }(window));
