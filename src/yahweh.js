@@ -47,11 +47,19 @@
 
     var reserved = {
       model: function(model) {
-        return createObj(model);
+        if (model instanceof Backbone.Model) {
+          return model;
+        } else {
+          return createObj(model);
+        }
       },
 
       collection: function(collection) {
-        return createObj(collection);
+        if (collection instanceof Backbone.Collection) {
+          return collection;
+        } else {
+          return createObj(collection);
+        }
       }
     };
 
@@ -228,17 +236,67 @@
       throwNotImplemented('template');
     },
 
-    context: function() {
-      return {};
+    cached: {},
+
+    requestData: {},
+
+    context: function(response) {
+      return response || {};
     },
 
     render: function() {
-      var template = this.resolveType('template'),
-          context = this.resolveType('context'),
-          output = localConfig.compile(template, context);
+      var cache,
+          obj = this.getRetrievableObj(),
+          template = this.getTemplate();
 
-      this.$el.html(output);
+      if ((cache = this.cached[template])) {
+        this.dumpHTML(cache);
+      } else {
+        if (obj) {
+          obj.fetch({
+            data: this.requestData,
+            success: _.bind(this.success, this)
+          });
+        } else {
+          this.renderTemplate();
+        }
+      }
+
       return this;
+    },
+
+    getRetrievableObj: function() {
+      var obj;
+
+      if (this.collection) {
+        obj = this.collection;
+      } else if (this.model) {
+        obj = this.model;
+      }
+
+      return obj;
+    },
+
+    getTemplate: function() {
+      return this.resolveType('template');
+    },
+
+    success: function(collection, response, options) {
+      this.renderTemplate(response);
+    },
+
+    renderTemplate: function(response) {
+      var template = this.resolveType('template'),
+          context = this.context(response),
+          data = _.extend({}, context, this.data),
+          output = localConfig.compile(template, data);
+
+      this.cached[template] = output;
+      this.dumpHTML(output);
+    },
+
+    dumpHTML: function(output) {
+      this.$el.html(output);
     },
 
     resolveType: function(name) {
@@ -246,7 +304,7 @@
 
       if (property) {
         if (propertyType === 'function') {
-          val = property();
+          val = property.call(this);
         } else {
           val = property;
         }
