@@ -220,6 +220,10 @@
   Yahweh.Implementer = Implementer;
 
   Yahweh.Foundation = Backbone.View.extend({
+    load: {},
+
+    cache: false,
+
     initialize: function(options) {
       this.data = {};
     },
@@ -238,43 +242,49 @@
 
     cached: {},
 
-    requestData: {},
-
     context: function(response) {
       return response || {};
     },
 
     render: function() {
-      var cache,
-          obj = this.getRetrievableObj(),
-          template = this.getTemplate();
-
-      if ((cache = this.cached[template])) {
-        this.dumpHTML(cache);
+      if (this.cache) {
+        this.handleCachedRender();
       } else {
-        if (obj) {
-          obj.fetch({
-            data: this.requestData,
-            success: _.bind(this.success, this)
-          });
-        } else {
-          this.renderTemplate();
-        }
+        this.renderTemplate();
       }
 
       return this;
     },
 
-    getRetrievableObj: function() {
-      var obj;
+    handleCachedRender: function() {
+      var cache, template = this.getTemplate();
 
-      if (this.collection) {
-        obj = this.collection;
-      } else if (this.model) {
-        obj = this.model;
+      if ((cache = this.getFromCache(template))) {
+        this.dumpHTML(cache);
+      } else {
+        this.handleRendering();
       }
 
-      return obj;
+      return this;
+    },
+
+    handleRendering: function() {
+      console.log(this.loadObj);
+      if (!_.isEmpty(this.load) && this.load.obj) {
+        this.retrieve();
+      } else {
+        this.renderTemplate();
+      }
+
+      return this;
+    },
+
+    retrieve: function() {
+      var obj = _.bind(this.load.obj, this);
+      obj().fetch({
+        data: this.load.data || {},
+        success: _.bind(this.success, this)
+      });
     },
 
     getTemplate: function() {
@@ -286,17 +296,28 @@
     },
 
     renderTemplate: function(response) {
-      var template = this.resolveType('template'),
+      var template = this.getTemplate(),
           context = this.context(response),
           data = _.extend({}, context, this.data),
           output = localConfig.compile(template, data);
 
-      this.cached[template] = output;
+      if (this.cache) {
+        this.cached[template] = output;
+      }
+
       this.dumpHTML(output);
     },
 
     dumpHTML: function(output) {
       this.$el.html(output);
+    },
+
+    getFromCache: function(name) {
+      return this.cached[name];
+    },
+
+    sendToCache: function(name, value) {
+      this.cached[template] = output;
     },
 
     resolveType: function(name) {
