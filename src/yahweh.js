@@ -60,6 +60,19 @@
         } else {
           return createObj(collection);
         }
+      },
+
+      subView: function(obj) {
+        return createObj(obj);
+      },
+
+      subViews: function(dict) {
+        var views = {};
+        _.each(dict, function(obj, name) {
+          views[name] = createObj(obj);
+        });
+
+        return views;
       }
     };
 
@@ -82,8 +95,31 @@
     initialize: function(options) {
       this.views = [];
       this.length = 0;
+      this.currentView = {};
+      this.parentEl = this.el;
       this.on('bundler:add', this.addToBundler,  this);
       this.appendViews(options.views);
+    },
+
+    render: function(view) {
+      this.setCurrentView(view);
+      this.parentEl.appendChild(this.renderCurrentView().el);
+      return this;
+    },
+
+    renderCurrentView: function() {
+      this.currentView.el = this.currentView.render().el;
+      return this.currentView;
+    },
+
+    tearDownCurrentView: function() {
+      if (!_.isEmpty(this.currentView)) {
+        this.currentView.trigger('teardown');
+
+        if (this.currentView.teardown) {
+          this.currentView.teardown();
+        }
+      }
     },
 
     appendViews: function(views) {
@@ -101,18 +137,20 @@
       this.length++;
     },
 
-    createView: function(view) {
-      var instance;
-      view.args = this.determineArgs(view);
-      instance = Yahweh.Inject(view);
-      this.trigger('bundler:add', instance);
-      this.views.push(instance);
+    setCurrentView: function(view) {
+      if (view) {
+        this.currentView = view;
+      }
+
+      return this;
     },
 
-    determineArgs: function(view) {
-      view.args = view.args || {};
-      view.args.el = this.el || {};
-      return view.args;
+    createView: function(view) {
+      var instance = Yahweh.Inject(view);
+      instance.parentEl = this.parentEl;
+
+      this.trigger('bundler:add', instance);
+      this.views.push(instance);
     }
   });
 
@@ -160,7 +198,7 @@
     },
 
     appendSection: function(id, section) {
-      var el;
+      var el, view;
 
       if ((el = document.getElementById(id))) {
         el.appendChild(section.render().el);
@@ -222,11 +260,11 @@
   Yahweh.Foundation = Backbone.View.extend({
     load: {},
 
+    data: {},
+
     cache: false,
 
-    initialize: function(options) {
-      this.data = {};
-    },
+    loaded: false,
 
     add: function(name, value) {
       if (name) {
@@ -234,6 +272,12 @@
       }
 
       return this;
+    },
+
+    get: function(name) {
+      if (typeof(this.data[name])) {
+        return this.data[name];
+      }
     },
 
     template: function() {
@@ -247,36 +291,56 @@
     },
 
     render: function() {
-      if (this.cache) {
-        this.handleCachedRender();
-      } else {
-        this.renderTemplate();
-      }
-
-      return this;
-    },
-
-    handleCachedRender: function() {
-      var cache, template = this.getTemplate();
-
-      if ((cache = this.getFromCache(template))) {
-        this.dumpHTML(cache);
-      } else {
-        this.handleRendering();
-      }
-
+      this.setDefaultData();
+      this.handleRendering();
       return this;
     },
 
     handleRendering: function() {
-      console.log(this.loadObj);
       if (!_.isEmpty(this.load) && this.load.obj) {
-        this.retrieve();
+        this.renderLoad();
       } else {
         this.renderTemplate();
       }
 
       return this;
+    },
+
+    getLoadKey: function() {
+      return this.load && this.load.key;
+    },
+
+    getResponseKey: function() {
+      var cache, key,
+          template = this.getTemplate(), loadKey = this.getLoadKey();
+
+      if (this.cache) {
+        if (loadKey) {
+          key = loadKey;
+        } else if (template) {
+          key = template;
+        }
+
+      }
+
+      return key;
+    },
+
+    getCachedResponse: function() {
+      if (this.cache) {
+        var key = this.getResponseKey(), cache = this.getFromCache(key);
+        return cache;
+      }
+    },
+
+    renderLoad: function() {
+      var cache;
+
+      if ((cache = this.getCachedResponse())) {
+        this.renderTemplate(cache);
+      } else {
+        this.retrieve();
+      }
     },
 
     retrieve: function() {
@@ -296,16 +360,23 @@
     },
 
     renderTemplate: function(response) {
-      var template = this.getTemplate(),
-          context = this.context(response),
-          data = _.extend({}, context, this.data),
-          output = localConfig.compile(template, data);
+      var template, context, data, output = '';
 
-      if (this.cache) {
-        this.cached[template] = output;
+      context = this.context(response);
+      data = _.extend({}, context, this.data);
+
+      template = this.getTemplate();
+      if (template) {
+        output = localConfig.compile(template, data);
       }
 
+      if (this.cache) {
+        this.sendToCache(this.getResponseKey(), response);
+      }
+
+      this.checkLoaded();
       this.dumpHTML(output);
+      this.trigger('post-render');
     },
 
     dumpHTML: function(output) {
@@ -317,7 +388,7 @@
     },
 
     sendToCache: function(name, value) {
-      this.cached[template] = output;
+      this.cached[name] = value;
     },
 
     resolveType: function(name) {
@@ -332,8 +403,126 @@
       }
 
       return val;
+    },
+
+    nestCollectionWithSubView: function(id, subView, args) {
+      this.on('post-render', function() {
+        var collector = Yahweh.collector({
+          el: '#' + id,
+          subView: subView,
+          collection: this.collection,
+          parent: this,
+          args: args
+        });
+
+        this.on('teardown', function() {
+          collector.trigger('teardown');
+        });
+      });
+    },
+
+    setDefaultData: function() {
+      this.add('loaded', this.loaded);
+    },
+
+    checkLoaded: function() {
+      this.on('post-render', function() {
+        if (!this.loaded) {
+          this.loaded = true;
+        }
+      });
     }
   });
+
+  Yahweh.Collector = Backbone.View.extend({
+    initialize: function(options) {
+      this.subView = options.subView;
+      this.parent = options.parent;
+      this.args = options.args;
+    },
+
+    render: function() {
+      this.renderSubViews(function(fragment) {
+        this.collection.each(function(model, i) {
+          this.appendSubView(fragment, model, i);
+        }, this);
+
+        return fragment;
+      });
+
+      return this;
+    },
+
+    renderRange: function(to, from) {
+      this.renderSubViews(function(fragment) {
+        var model;
+
+        while (to < from) {
+          model = this.collection.at(to);
+
+          if (model) {
+            this.appendSubView(fragment, model, to);
+          }
+
+          to++;
+        }
+
+      });
+
+      return this;
+    },
+
+    appendSubView: function(fragment, model, i) {
+      var view = this.createSubView(model, i);
+
+      this.on('teardown', function() {
+        view.remove();
+      });
+
+      fragment.appendChild(view.render().el);
+    },
+
+    renderSubViews: function(fn) {
+      var fragment = document.createDocumentFragment(),
+          children = fn.call(this, fragment);
+
+      this.appendToEl(fragment);
+    },
+
+    appendToEl: function(fragment) {
+      this.el.appendChild(fragment);
+    },
+
+    appendViewFragment: function(fragment, view) {
+      fragment.appendChild(view.render().el);
+    },
+
+    createSubView: function(model, index) {
+      var options = {
+        model: model,
+        index: index,
+        parent: this.parent
+      };
+
+      return this.subView(_.extend(options, this.args));
+    }
+  });
+
+  Yahweh.collector = function(options) {
+    var collector, defaultOptions = {
+      render: true
+    };
+
+    _.defaults(options, defaultOptions);
+    collector = new Yahweh.Collector(options);
+
+    if (options.render) {
+      collector = collector.render();
+    }
+
+    return collector;
+  };
+
 
   // Any basic setup or implementations happen here. Think of this area as the
   // bootstrap portion to anything Yahweh related.

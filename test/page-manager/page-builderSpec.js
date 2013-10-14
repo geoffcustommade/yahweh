@@ -83,7 +83,6 @@ define([
       expect(location.hash).toEqual('');
 
       this.pageManager.router.navigate('about', {trigger: true});
-
       expect($('#content')).toContainHtml('<h1>About</h1><p>I am an about page.</p>');
       expect(location.hash).toEqual('#about');
     });
