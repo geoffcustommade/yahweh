@@ -1,6 +1,10 @@
 (function(win) {
-  function getRoot(root) {
+  function getRoot(root, hashbang) {
     if (root) {
+      if (root.indexOf('!') !== 1) {
+        root = '!' + root;
+      }
+
       return root + '/';
     }
   }
@@ -57,6 +61,7 @@
       this.counter = 0;
       this.root = options.root || '';
       this.view = options.view;
+      this.hashbang = options.hashbang;
       this.setPageRoute();
     },
 
@@ -65,22 +70,30 @@
     },
 
     setPageRoute: function() {
-      this.route(this.root + ':path', 'listenForPath');
+      var callback = 'listenForPath';
+
+      this.route(this.root + ':path', callback);
+      this.route(this.root + ':path?*querystring', callback);
+
+      if (this.hashbang) {
+        this.route(this.root.substring(1) + ':path', callback);
+        this.route(this.root.substring(1) + ':path?*querystring', callback);
+      }
     },
 
-    listenForPath: function(path) {
+    listenForPath: function(path, querystring) {
       this.view.trigger('path-change', path, this.counter++);
     }
   });
 
   function PageManager(args) {
-    var root = getRoot(args.root), view, router;
-
+    var root = getRoot(args.root, args.hashbang) || '', view, router;
     args.root = root;
     view = new PageBuilder(args).render();
     router = new PageRouter({
       view: view,
-      root: args.root
+      root: args.root,
+      hashbang: args.hashbang
     });
 
     if (args.start) {
