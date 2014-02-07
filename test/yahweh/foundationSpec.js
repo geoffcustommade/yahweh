@@ -1,4 +1,4 @@
-define(['yahweh', 'underscore', 'jasmine-jquery'], function(Yahweh, _) {
+define(['yahweh', 'underscore'], function(Yahweh, _) {
   describe('Foundation', function() {
     function createView(properties) {
       var View, baseProperties;
