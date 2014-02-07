@@ -104,6 +104,7 @@
     render: function(view) {
       this.setCurrentView(view);
       this.parentEl.appendChild(this.renderCurrentView().el);
+      this.currentView.trigger('yahweh:foundation:post-render');
       return this;
     },
 
@@ -476,6 +477,7 @@
       var view = this.createSubView(model, i);
 
       this.on('teardown', function() {
+        view.trigger('teardown');
         view.remove();
       });
 
@@ -504,7 +506,19 @@
         parent: this.parent
       };
 
-      return this.subView(_.extend(options, this.args));
+      return this.callSubView(_.extend(options, this.args));
+    },
+
+    callSubView: function(args) {
+      var instance;
+
+      if (this.subView.prototype) {
+        instance = new this.subView(args);
+      } else {
+        instance = this.subView(args);
+      }
+
+      return instance;
     }
   });
 
