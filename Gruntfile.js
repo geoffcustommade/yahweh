@@ -29,7 +29,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             src: ['src/*'],
-            dest: process.env.HOME + '/CustomMade/static/js/yahweh',
+            dest: process.env.HOME + '/CustomMade/static/js/lib/yahweh',
             flatten: true
           }
         ]
